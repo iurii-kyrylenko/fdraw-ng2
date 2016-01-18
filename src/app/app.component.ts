@@ -6,9 +6,9 @@ import {FDraw} from './fdraw/fdraw.component';
     selector: 'app',
     directives: [FDraw],
     template: `
-        <input [(ngModel)]="params.width" />
+        <input [value]="params.width" (input)="pushToImmutable('width', $event.target.value)" />
         ×
-        <input [(ngModel)]="params.height" />
+        <input [value]="params.height" (input)="pushToImmutable('height', $event.target.value)" />
 
         {{params | json}}
 
@@ -23,4 +23,8 @@ export class App {
         y: 0,
         zoom: 100
     };
+
+    pushToImmutable(prop: string, value: string) {
+        this.params = Object.assign({}, this.params, {[prop]: +value});
+    }
 }

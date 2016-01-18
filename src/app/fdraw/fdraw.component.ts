@@ -1,4 +1,4 @@
-import {Component, Input, ElementRef, AfterViewInit} from 'angular2/core';
+import {Component, Input, ElementRef, OnChanges, SimpleChange} from 'angular2/core';
 import {Observable} from 'rxjs/Rx';
 import {IFDrawParams} from './fdraw-params';
 
@@ -17,7 +17,7 @@ import {IFDrawParams} from './fdraw-params';
         </canvas>
     `
 })
-export class FDraw implements AfterViewInit {
+export class FDraw implements OnChanges {
     @Input() params: IFDrawParams;
     private _canvas: any;
 
@@ -33,9 +33,12 @@ export class FDraw implements AfterViewInit {
         });
     }
 
-    ngAfterViewInit() {
-        let ctx = this._canvas.getContext('2d');
-        ctx.font = '30px Arial';
-        ctx.fillText('TEST', 10, 50);
+    ngOnChanges(changes: { [propertyName: string]: SimpleChange }) {
+        setTimeout(() => {
+            console.log('changes:', changes);
+            let ctx = this._canvas.getContext('2d');
+            ctx.font = '30px Arial';
+            ctx.fillText(`${this.params.width}×${this.params.height}`, 10, 50);
+        });
     }
 }
