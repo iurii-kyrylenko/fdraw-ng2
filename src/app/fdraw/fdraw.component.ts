@@ -1,6 +1,9 @@
 import {Component, Input, ElementRef, OnChanges, SimpleChange} from 'angular2/core';
-import {Observable} from 'rxjs/Rx';
 import {IFDrawParams} from './fdraw-params';
+import {MapPoint} from './map-point.service';
+import {Interactions} from './interactions.service';
+import {Iterations} from './iterations.service';
+import {GetColor} from './get-color.service';
 
 @Component({
     selector: 'fdraw',
@@ -11,34 +14,72 @@ import {IFDrawParams} from './fdraw-params';
         }
     `],
     template: `
-        <canvas
+        <canvas tabindex="1"
             [width]="params.width"
             [height]="params.height">
-        </canvas>
-    `
+        </canvas>`,
+    providers: [MapPoint, Interactions, Iterations, GetColor]
 })
 export class FDraw implements OnChanges {
     @Input() params: IFDrawParams;
     private _canvas: any;
 
-    constructor(element: ElementRef) {
+    constructor(
+        element: ElementRef,
+        private mapPoint: MapPoint,
+        private interactions: Interactions,
+        private iterations: Iterations,
+        private getColor: GetColor) {
+
         this._canvas = element.nativeElement.querySelector('canvas');
-        console.log('canvas:', this._canvas);
-
-        let obs = Observable.fromEvent(this._canvas, 'mousedown');
-
-        obs.subscribe((event: MouseEvent) => {
-            this.params.x = event.clientX;
-            this.params.y = event.clientY;
-        });
     }
 
     ngOnChanges(changes: { [propertyName: string]: SimpleChange }) {
         setTimeout(() => {
-            console.log('changes:', changes);
-            let ctx = this._canvas.getContext('2d');
-            ctx.font = '30px Arial';
-            ctx.fillText(`${this.params.width}×${this.params.height}`, 10, 50);
+            this.draw();
         });
+    }
+
+    ngOnInit() {
+        this.interactions.bind(this._canvas, this.params, {
+            move: (dx: number, dy: number) => {
+                this.params.x -= dx;
+                this.params.y -= dy;
+                this.draw();
+            },
+            zoomIn: () => {
+                this.params.zoom *= 1.5;
+                this.draw();
+            },
+            zoomOut: () => {
+                this.params.zoom /= 1.5;
+                this.draw();
+            }
+        });
+    }
+
+    draw() {
+        let context = this._canvas.getContext('2d');
+
+        let width = this.params.width,
+        height = this.params.height,
+        halfWidth  = Math.floor(width / 2),
+        halfHeight = Math.floor(height / 2);
+        let imgData = context.createImageData(width, height);
+        const maxIter = 300;
+
+        for (let j = 0; j < height; j++) {
+          for (let i = 0; i < width; i++) {
+             let ii = 4 * (j * width + i);
+             let cPoint = this.mapPoint.map(i - halfWidth, j - halfHeight, this.params);
+             let nIter = this.iterations.mandelbrot(cPoint, maxIter);
+             let c = this.getColor.wb(nIter / maxIter);
+             imgData.data[ii + 0] = c.r;
+             imgData.data[ii + 1] = c.g;
+             imgData.data[ii + 2] = c.b;
+             imgData.data[ii + 3] = c.a;
+          }
+        }
+        context.putImageData(imgData, 0, 0);
     }
 }
