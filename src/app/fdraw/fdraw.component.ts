@@ -41,10 +41,10 @@ export class FDraw implements OnChanges {
     }
 
     ngOnInit() {
-        this.interactions.bind(this._canvas, this.params, {
+        this.interactions.bind(this._canvas, {
             move: (dx: number, dy: number) => {
-                this.params.x -= dx;
-                this.params.y -= dy;
+                this.params.x -= dx / this.params.zoom;
+                this.params.y += dy / this.params.zoom;
                 this.draw();
             },
             zoomIn: () => {

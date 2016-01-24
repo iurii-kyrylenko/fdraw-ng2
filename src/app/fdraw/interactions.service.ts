@@ -1,19 +1,17 @@
 import {Injectable} from 'angular2/core';
-import {MapPoint} from './map-point.service';
 
 @Injectable()
 export class Interactions {
-    constructor(private mapPoint: MapPoint) {}
 
-    bind(elem: any, trgParams: any, actions: any): void {
+    bind(elem: any, actions: any): void {
         let cStart: {x: number, y: number};
 
         elem.addEventListener('mousedown', (event: MouseEvent) => {
-            cStart = this.mapPoint.map(event.clientX, event.clientY, trgParams);
+            cStart = { x: event.clientX, y: event.clientY };
         });
 
         elem.addEventListener('mouseup', (event: MouseEvent) => {
-            let cEnd = this.mapPoint.map(event.clientX, event.clientY, trgParams);
+            let cEnd = { x: event.clientX, y: event.clientY };
             actions.move(cEnd.x - cStart.x, cEnd.y - cStart.y);
         });
 
