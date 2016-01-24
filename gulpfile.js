@@ -28,9 +28,7 @@ gulp.task('copy:assets', ['clean'], function() {
 // copy dependencies
 gulp.task('copy:libs', ['clean'], function() {
   return gulp.src([
-      'node_modules/es6-shim/es6-shim.js',
       'node_modules/angular2/bundles/angular2-polyfills.js',
-      'node_modules/systemjs/dist/system-polyfills.js',
       'node_modules/systemjs/dist/system.src.js',
       'node_modules/rxjs/bundles/Rx.js',
       'node_modules/angular2/bundles/angular2.dev.js'
